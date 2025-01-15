@@ -1,34 +1,27 @@
 import React from "react";
-import { Card, Text } from "@mantine/core";
 import useStockStore from "../store";
+import { Group, Badge } from "@mantine/core";
 
 const TopCards: React.FC = () => {
   const { stocks } = useStockStore();
 
   return (
-    <>
+    <Group gap="xl" style={{ width: "100%" }}>
       {stocks.map((stock) => {
-        const { symbol, currentPrice, alertPrice, percentageChange } = stock;
+        const { symbol, currentPrice, alertPrice } = stock;
         const isAboveAlert = currentPrice >= alertPrice;
-
         return (
-          <Card
+          <Badge
             key={symbol}
-            shadow="sm"
-            p="lg"
-            style={{
-              backgroundColor: isAboveAlert ? "lightgreen" : "lightcoral",
-              marginBottom: "1rem",
-            }}
+            variant="dot"
+            color={isAboveAlert ? "green" : "red"}
+            size="xl"
           >
-            <Text fw={700}>{symbol}</Text>
-            <Text>Current: {currentPrice.toFixed(2)}</Text>
-            <Text>Change: {percentageChange.toFixed(2)}%</Text>
-            <Text>Alert: {alertPrice.toFixed(2)}</Text>
-          </Card>
+            {symbol}: ${currentPrice.toFixed(2)}
+          </Badge>
         );
       })}
-    </>
+    </Group>
   );
 };
 

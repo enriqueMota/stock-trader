@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from "react";
+import { AppShell, Flex, Grid, MantineProvider } from "@mantine/core";
+import useStockStore from "./store";
+import webSocketService from "./service";
+import LeftForm from "./components/LeftForm";
+import TopCards from "./components/TopCards";
+import StockChart from "./components/StockChart";
+import { FinnhubTrade } from "./service/websocketService";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { updateStock } = useStockStore();
+  const { initWebsocket } = webSocketService;
+
+  useEffect(() => {
+    initWebsocket((tradeData: FinnhubTrade[]) => {
+      tradeData.forEach((trade) => {
+        updateStock(trade.s, trade.p);
+      });
+    });
+  }, [updateStock, initWebsocket]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <MantineProvider>
+      <AppShell header={{ height: 70 }}>
+        <AppShell.Header
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <TopCards />
+        </AppShell.Header>
+        <AppShell.Main w="100vw">
+          <Grid mt="5rem">
+            <Grid.Col span={4}>
+              <Flex justify="center" align="center" direction="column" h="100%">
+                <LeftForm />
+              </Flex>
+            </Grid.Col>
+            <Grid.Col span={7}>
+              <Flex>
+                <StockChart />
+              </Flex>
+            </Grid.Col>
+          </Grid>
+        </AppShell.Main>
+      </AppShell>
+    </MantineProvider>
+  );
 }
 
-export default App
+export default App;

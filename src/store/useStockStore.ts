@@ -22,11 +22,33 @@ export interface StockState {
 }
 
 const useStockStore = create<StockState>((set, get) => ({
-  stocks: [],
-  stockHistory: {},
+  stocks: [
+    {
+      symbol: "AAPL",
+      currentPrice: 0,
+      percentageChange: 0,
+      alertPrice: 200,
+    },
+    {
+      symbol: "BINANCE:BTCUSDT",
+      currentPrice: 0,
+      percentageChange: 0,
+      alertPrice: 20000,
+    },
+    {
+      symbol: "IC MARKETS:1",
+      currentPrice: 0,
+      percentageChange: 0,
+      alertPrice: 100, // or whatever you like
+    },
+  ],
+  stockHistory: {
+    AAPL: [],
+    "BINANCE:BTCUSDT": [],
+    "IC MARKETS:1": [],
+  },
   addStock: (symbol: string, alertPrice: number) => {
     const { stocks, stockHistory } = get();
-    // Don’t add if symbol already exists
     if (!stocks.find((s) => s.symbol === symbol)) {
       set({
         stocks: [

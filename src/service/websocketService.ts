@@ -1,19 +1,38 @@
-const apiKey = import.meta.env.VITE_FINNHUB_API_KEY;
+const apiKey = import.meta.env.VITE_FINNHUB_KEY;
+
 const FINNHUB_SOCKET_URL = `wss://ws.finnhub.io?token=${apiKey}`;
+
+export interface FinnhubTrade {
+  p: number; // price
+  s: string; // symbol
+  t: number; // timestamp (ms)
+  v: number; // volume
+}
 
 let socket: WebSocket | null = null;
 
-function initWebsocket(onMessage: (data: unknown) => void) {
+/**
+ * Initialize the WebSocket and attach a callback for 'trade' data.
+ *
+ * @param onTradeData Callback that receives an array of FinnhubTrade objects
+ */
+const initWebsocket = (onTradeData: (tradeData: FinnhubTrade[]) => void) => {
   socket = new WebSocket(FINNHUB_SOCKET_URL);
 
   socket.onopen = () => {
     console.log("[WebSocket] Connected to Finnhub");
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "AAPL" }));
+    socket?.send(
+      JSON.stringify({ type: "subscribe", symbol: "BINANCE:BTCUSDT" })
+    );
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "IC MARKETS:1" }));
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "IC MARKETS:1" }));
   };
 
   socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    if (data?.data) {
-      onMessage(data.data);
+    const message = JSON.parse(event.data);
+    if (message.type === "trade" && message.data) {
+      onTradeData(message.data);
     }
   };
 
@@ -21,15 +40,21 @@ function initWebsocket(onMessage: (data: unknown) => void) {
     console.log("[WebSocket] Disconnected from Finnhub");
     socket = null;
   };
-}
+};
 
-function subscribeToSymbol(symbol: string) {
+/**
+ * Subscribe to a new symbol at runtime
+ */
+const subscribeToSymbol = (symbol: string) => {
   socket?.send(JSON.stringify({ type: "subscribe", symbol }));
-}
+};
 
-function unsubscribeFromSymbol(symbol: string) {
+/**
+ * Unsubscribe from a symbol
+ */
+const unsubscribeFromSymbol = (symbol: string) => {
   socket?.send(JSON.stringify({ type: "unsubscribe", symbol }));
-}
+};
 
 export default {
   initWebsocket,
