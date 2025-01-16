@@ -1,14 +1,19 @@
 import React from "react";
-import { Group, Box, Text, Divider } from "@mantine/core";
+import { Group, Box, Text, Divider, NumberFormatter } from "@mantine/core";
 import useStockStore from "../store";
 
 const TopCards: React.FC = () => {
   const { defaultStocks } = useStockStore();
   return (
-    <Group gap="xl" justify="space-around" style={{ width: "100%" }}>
+    <Group
+      gap="xl"
+      bg="#2e2e2e"
+      justify="space-around"
+      style={{ width: "100%" }}
+    >
       {defaultStocks.map((stock) => {
         const { symbol, currentPrice, percentageChange } = stock;
-
+        // Calculating the difference in price
         const difference = (percentageChange / 100) * currentPrice;
         const isPositive = difference > 0;
         const arrow = isPositive ? "↑" : "↓";
@@ -18,19 +23,21 @@ const TopCards: React.FC = () => {
           <Box
             key={symbol}
             style={{
-              // width: "9rem", // or adjust as needed
-              // backgroundColor: "#2e2e2e",
               borderRadius: 4,
               padding: "8px",
               margin: "4px",
             }}
           >
             <Group gap="xs" justify="space-between">
-              <Text size="sm" fw={500}>
+              <Text size="sm" c="white" fw={500}>
                 {symbol}
               </Text>
-              <Text size="sm" fw={500}>
-                {currentPrice.toFixed(4)}
+              <Text size="sm" c="white" fw={600}>
+                <NumberFormatter
+                  prefix="$ "
+                  value={currentPrice}
+                  thousandSeparator
+                />
               </Text>
             </Group>
             <Box mt={4}>

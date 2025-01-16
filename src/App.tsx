@@ -15,9 +15,11 @@ function App() {
   const { initWebsocket } = webSocketService;
 
   useEffect(() => {
+    // Initializing websocket connection
     initWebsocket((tradeData: FinnhubTrade[]) => {
       for (let index = 0; index < tradeData.length; index++) {
         const trade = tradeData[index];
+        // Checking if the stock is in the default stocks
         if (defaultStocks.some((stock) => stock.symbol === trade.s)) {
           updateDefaultStocks(trade.s, trade.p);
           continue;

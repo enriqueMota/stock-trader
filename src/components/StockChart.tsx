@@ -11,7 +11,7 @@ import {
 } from "chart.js";
 import useStockStore from "../store";
 import getRandomColor from "../utils/colors";
-import { Badge, Flex } from "@mantine/core";
+import { Badge, Flex, NumberFormatter } from "@mantine/core";
 
 ChartJS.register(
   CategoryScale,
@@ -24,6 +24,7 @@ ChartJS.register(
 const StockChart: React.FC = () => {
   const { stocks, stockHistory } = useStockStore();
 
+  // creating a color map for each stock
   const colorMap = useMemo(() => {
     const map: Record<string, string> = {};
     stocks.forEach((s) => {
@@ -34,6 +35,7 @@ const StockChart: React.FC = () => {
     return map;
   }, [stocks]);
 
+  // creating datasets for the chart
   const datasets = stocks.map((s) => {
     const history = stockHistory[s.symbol] || [];
 
@@ -49,6 +51,7 @@ const StockChart: React.FC = () => {
     };
   });
 
+  // setting options and data for the chart
   const data = {
     datasets,
   };
@@ -76,12 +79,13 @@ const StockChart: React.FC = () => {
   } as any;
 
   return (
-    <Flex direction="column" gap="md" w="100%">
+    <Flex p="lg" direction="column" gap="md" w="100%">
       <Line data={data} options={options} />
       <Flex align="center" w="100%" direction="row" gap="md">
-        {stocks.map(({ symbol, currentPrice }) => (
+        {stocks.map(({ symbol, alertPrice }) => (
           <Badge key={symbol} variant="dot" color="blue" size="lg">
-            {symbol}: ${currentPrice.toFixed(2)}
+            {symbol}:{" "}
+            <NumberFormatter prefix="$ " value={alertPrice} thousandSeparator />
           </Badge>
         ))}
       </Flex>

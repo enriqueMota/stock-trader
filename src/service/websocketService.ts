@@ -21,6 +21,8 @@ const initWebsocket = (onTradeData: (tradeData: FinnhubTrade[]) => void) => {
 
   socket.onopen = () => {
     console.log("[WebSocket] Connected to Finnhub");
+
+    // Subscribing to default symbols for TopCards
     socket?.send(
       JSON.stringify({ type: "subscribe", symbol: "BINANCE:BTCUSDT" })
     );

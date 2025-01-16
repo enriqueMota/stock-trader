@@ -17,9 +17,11 @@ const LeftForm: React.FC = () => {
   const finnhub = useFinnhub();
 
   useEffect(() => {
+    // Fetching stock symbols for the select component
     finnhub.stockSymbols("US").then(({ data }) => {
       const symbols = [];
       for (let index = 0; index < data.length; index++) {
+        // Limiting the number of symbols to 20
         if (index >= 20) break;
         const element = data[index];
         symbols.push(element);
@@ -47,13 +49,20 @@ const LeftForm: React.FC = () => {
   };
 
   return (
-    <Box component="form" onSubmit={form.onSubmit(handleSubmit)}>
+    <Box
+      component="form"
+      bd="1px solid gray"
+      p="4rem"
+      style={{ borderRadius: 4 }}
+      onSubmit={form.onSubmit(handleSubmit)}
+    >
       <Flex direction="column" gap="md" w="25rem">
         <Select
           label="Select a stock"
           placeholder="Pick one"
           data={[
             { label: "", value: "" },
+            { label: "Apple (AAPL)", value: "AAPL" },
             ...(symbols?.map((symbol) => ({
               value: symbol.symbol,
               label: `${symbol.description} (${symbol.symbol})`,
