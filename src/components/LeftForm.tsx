@@ -62,7 +62,10 @@ const LeftForm: React.FC = () => {
           placeholder="Pick one"
           data={[
             { label: "", value: "" },
-            { label: "Apple (AAPL)", value: "AAPL" },
+            { label: "D-Wave Quantum (QBTS)", value: "QBTS" },
+            { label: "Plug Power Inc. (PLUG)", value: "PLUG" },
+            { label: "Vale S.A. Sponsored ADR (VALE)", value: "VALE" },
+            { label: "DatChat, Inc. (DATS)", value: "DATS" },
             ...(symbols?.map((symbol) => ({
               value: symbol.symbol,
               label: `${symbol.description} (${symbol.symbol})`,
