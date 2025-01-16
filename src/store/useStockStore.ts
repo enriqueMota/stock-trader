@@ -42,7 +42,6 @@ function notifyPriceBelowAlert(symbol: string, price: number, alert: number) {
       body: `${symbol} is at $${price}, below your alert of $${alert}`,
     });
   }
-  // or send to your server for a web push
 }
 const useStockStore = create<StockState>()(
   persist(
@@ -117,7 +116,7 @@ const useStockStore = create<StockState>()(
       },
       updateStock: (symbol, newPrice) => {
         const { stocks, stockHistory } = get();
-        // Update store
+        // Updating store
         const updatedStocks = stocks.map((s) => {
           if (s.symbol === symbol) {
             const oldPrice = s.currentPrice;
@@ -125,7 +124,7 @@ const useStockStore = create<StockState>()(
               oldPrice === 0 ? 0 : ((newPrice - oldPrice) / oldPrice) * 100;
 
             if (newPrice < s.alertPrice) {
-              // Trigger a local or push notification
+              // Triggering a local or push notification
               notifyPriceBelowAlert(symbol, newPrice, s.alertPrice);
             }
 
@@ -138,7 +137,7 @@ const useStockStore = create<StockState>()(
           return s;
         });
 
-        // Update historical data
+        // Updating historical data
         const now = Date.now();
         const updatedHistory = {
           ...stockHistory,

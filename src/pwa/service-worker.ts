@@ -7,7 +7,6 @@ declare const self: ServiceWorkerGlobalScope;
 
 clientsClaim();
 
-// We’ll assume the plugin injects the manifest
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener("push", (event) => {

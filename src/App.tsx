@@ -11,6 +11,7 @@ import { finnhubClient, FinnhubProvider } from "react-finnhub";
 const client = finnhubClient(apiKey);
 
 function App() {
+  // Using the store to access the state and actions
   const { updateStock, defaultStocks, updateDefaultStocks } = useStockStore();
   const { initWebsocket } = webSocketService;
 
