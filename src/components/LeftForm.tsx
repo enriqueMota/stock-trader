@@ -1,24 +1,32 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { Button, Select, NumberInput, Box, Flex } from "@mantine/core";
 import useStockStore from "../store";
 import socketService from "../service";
+import { useFinnhub } from "react-finnhub";
+import { StockSymbol } from "../store/useStockStore";
 
 interface FormValues {
   symbol: string;
   alertPrice: number;
 }
 
-const stockOptions = [
-  // { value: "AAPL", label: "Apple (AAPL)" },
-  { value: "TSLA", label: "Tesla (TSLA)" },
-  { value: "MSFT", label: "Microsoft (MSFT)" },
-  // add more or fetch from an API
-];
-
 const LeftForm: React.FC = () => {
-  const { addStock } = useStockStore();
+  const { addStock, setStockSymbols, symbols } = useStockStore();
   const { subscribeToSymbol } = socketService;
+  const finnhub = useFinnhub();
+
+  useEffect(() => {
+    finnhub.stockSymbols("US").then(({ data }) => {
+      const symbols = [];
+      for (let index = 0; index < data.length; index++) {
+        if (index >= 20) break;
+        const element = data[index];
+        symbols.push(element);
+      }
+      setStockSymbols(symbols as StockSymbol[]);
+    });
+  }, [setStockSymbols, finnhub]);
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -43,7 +51,10 @@ const LeftForm: React.FC = () => {
         <Select
           label="Select a stock"
           placeholder="Pick one"
-          data={stockOptions}
+          data={symbols?.map((symbol) => ({
+            value: symbol.symbol,
+            label: `${symbol.description} (${symbol.symbol})`,
+          }))}
           {...form.getInputProps("symbol")}
         />
         <NumberInput

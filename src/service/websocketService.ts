@@ -1,4 +1,4 @@
-const apiKey = import.meta.env.VITE_FINNHUB_KEY;
+export const apiKey = import.meta.env.VITE_FINNHUB_KEY;
 
 const FINNHUB_SOCKET_URL = `wss://ws.finnhub.io?token=${apiKey}`;
 
@@ -21,12 +21,15 @@ const initWebsocket = (onTradeData: (tradeData: FinnhubTrade[]) => void) => {
 
   socket.onopen = () => {
     console.log("[WebSocket] Connected to Finnhub");
-    socket?.send(JSON.stringify({ type: "subscribe", symbol: "AAPL" }));
     socket?.send(
       JSON.stringify({ type: "subscribe", symbol: "BINANCE:BTCUSDT" })
     );
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "AAPL" }));
     socket?.send(JSON.stringify({ type: "subscribe", symbol: "IC MARKETS:1" }));
-    socket?.send(JSON.stringify({ type: "subscribe", symbol: "IC MARKETS:1" }));
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "MSFT" }));
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "TSLA" }));
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "NVDA" }));
+    socket?.send(JSON.stringify({ type: "subscribe", symbol: "AMZN" }));
   };
 
   socket.onmessage = (event) => {
