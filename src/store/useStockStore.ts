@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface StockDataPoint {
   time: number;
@@ -35,152 +36,172 @@ export interface StockSymbol {
   symbol: string;
   type: string;
 }
-
-const useStockStore = create<StockState>((set, get) => ({
-  stocks: [],
-  defaultStocks: [
-    {
-      symbol: "AAPL",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 200,
-    },
-    {
-      symbol: "BINANCE:BTCUSDT",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 20000,
-    },
-    {
-      symbol: "IC MARKETS:1",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 100,
-    },
-    {
-      symbol: "MSFT",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 100,
-    },
-    {
-      symbol: "TSLA",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 100,
-    },
-    {
-      symbol: "NVDA",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 100,
-    },
-    {
-      symbol: "AMZN",
-      currentPrice: 0,
-      percentageChange: 0,
-      alertPrice: 100,
-    },
-  ],
-  stockHistory: {},
-  defaultStockHistory: {
-    AAPL: [],
-    "BINANCE:BTCUSDT": [],
-    "IC MARKETS:1": [],
-    MSFT: [],
-    TSLA: [],
-    NVDA: [],
-    AMZN: [],
-  },
-  symbols: [],
-  addStock: (symbol: string, alertPrice: number) => {
-    const { stocks, stockHistory } = get();
-    if (!stocks.find((s) => s.symbol === symbol)) {
-      set({
-        stocks: [
-          ...stocks,
-          { symbol, currentPrice: 0, percentageChange: 0, alertPrice },
-        ],
-        stockHistory: { ...stockHistory, [symbol]: [] },
-      });
-    }
-  },
-  updateStock: (symbol, newPrice) => {
-    const { stocks, stockHistory } = get();
-    // Update store
-    const updatedStocks = stocks.map((s) => {
-      if (s.symbol === symbol) {
-        const oldPrice = s.currentPrice;
-        const newPercentageChange =
-          oldPrice === 0 ? 0 : ((newPrice - oldPrice) / oldPrice) * 100;
-
-        return {
-          ...s,
-          currentPrice: newPrice,
-          percentageChange: newPercentageChange,
-        };
-      }
-      return s;
+function notifyPriceBelowAlert(symbol: string, price: number, alert: number) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("Price Alert", {
+      body: `${symbol} is at $${price}, below your alert of $${alert}`,
     });
-
-    // Update historical data
-    const now = Date.now();
-    const updatedHistory = {
-      ...stockHistory,
-      [symbol]: [
-        ...(stockHistory[symbol] || []),
-        { time: now, price: newPrice },
+  }
+  // or send to your server for a web push
+}
+const useStockStore = create<StockState>()(
+  persist(
+    (set, get) => ({
+      stocks: [],
+      defaultStocks: [
+        {
+          symbol: "AAPL",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 200,
+        },
+        {
+          symbol: "BINANCE:BTCUSDT",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 20000,
+        },
+        {
+          symbol: "IC MARKETS:1",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 100,
+        },
+        {
+          symbol: "MSFT",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 100,
+        },
+        {
+          symbol: "TSLA",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 100,
+        },
+        {
+          symbol: "NVDA",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 100,
+        },
+        {
+          symbol: "AMZN",
+          currentPrice: 0,
+          percentageChange: 0,
+          alertPrice: 100,
+        },
       ],
-    };
+      stockHistory: {},
+      defaultStockHistory: {
+        AAPL: [],
+        "BINANCE:BTCUSDT": [],
+        "IC MARKETS:1": [],
+        MSFT: [],
+        TSLA: [],
+        NVDA: [],
+        AMZN: [],
+      },
+      symbols: [],
+      addStock: (symbol: string, alertPrice: number) => {
+        const { stocks, stockHistory } = get();
+        if (!stocks.find((s) => s.symbol === symbol)) {
+          set({
+            stocks: [
+              ...stocks,
+              { symbol, currentPrice: 0, percentageChange: 0, alertPrice },
+            ],
+            stockHistory: { ...stockHistory, [symbol]: [] },
+          });
+        }
+      },
+      updateStock: (symbol, newPrice) => {
+        const { stocks, stockHistory } = get();
+        // Update store
+        const updatedStocks = stocks.map((s) => {
+          if (s.symbol === symbol) {
+            const oldPrice = s.currentPrice;
+            const newPercentageChange =
+              oldPrice === 0 ? 0 : ((newPrice - oldPrice) / oldPrice) * 100;
 
-    set({ stocks: updatedStocks, stockHistory: updatedHistory });
-  },
-  updateDefaultStocks: (symbol, newPrice) => {
-    const { defaultStocks, defaultStockHistory } = get();
-    // Update store
-    const updatedStocks = defaultStocks.map((s) => {
-      if (s.symbol === symbol) {
-        const oldPrice = s.currentPrice;
-        const newPercentageChange =
-          oldPrice === 0 ? 0 : ((newPrice - oldPrice) / oldPrice) * 100;
+            if (newPrice < s.alertPrice) {
+              // Trigger a local or push notification
+              notifyPriceBelowAlert(symbol, newPrice, s.alertPrice);
+            }
 
-        return {
-          ...s,
-          currentPrice: newPrice,
-          percentageChange: newPercentageChange,
+            return {
+              ...s,
+              currentPrice: newPrice,
+              percentageChange: newPercentageChange,
+            };
+          }
+          return s;
+        });
+
+        // Update historical data
+        const now = Date.now();
+        const updatedHistory = {
+          ...stockHistory,
+          [symbol]: [
+            ...(stockHistory[symbol] || []),
+            { time: now, price: newPrice },
+          ],
         };
-      }
-      return s;
-    });
 
-    const now = Date.now();
-    const updatedHistory = {
-      ...defaultStockHistory,
-      [symbol]: [
-        ...(defaultStockHistory[symbol] || []),
-        { time: now, price: newPrice },
-      ],
-    };
+        set({ stocks: updatedStocks, stockHistory: updatedHistory });
+      },
+      updateDefaultStocks: (symbol, newPrice) => {
+        const { defaultStocks, defaultStockHistory } = get();
+        // Update store
+        const updatedStocks = defaultStocks.map((s) => {
+          if (s.symbol === symbol) {
+            const oldPrice = s.currentPrice;
+            const newPercentageChange =
+              oldPrice === 0 ? 0 : ((newPrice - oldPrice) / oldPrice) * 100;
 
-    set({ defaultStocks: updatedStocks, defaultStockHistory: updatedHistory });
-  },
+            return {
+              ...s,
+              currentPrice: newPrice,
+              percentageChange: newPercentageChange,
+            };
+          }
+          return s;
+        });
 
-  setAlertPrice: (symbol, alertPrice) => {
-    const { stocks } = get();
-    const updatedStocks = stocks.map((s) =>
-      s.symbol === symbol ? { ...s, alertPrice } : s
-    );
-    set({ stocks: updatedStocks });
-  },
+        const now = Date.now();
+        const updatedHistory = {
+          ...defaultStockHistory,
+          [symbol]: [
+            ...(defaultStockHistory[symbol] || []),
+            { time: now, price: newPrice },
+          ],
+        };
 
-  setPercentageChange: (symbol, percentageChange) => {
-    const { stocks } = get();
-    const updatedStocks = stocks.map((s) =>
-      s.symbol === symbol ? { ...s, percentageChange } : s
-    );
-    set({ stocks: updatedStocks });
-  },
-  setStockSymbols: (symbols) => set({ symbols }),
-}));
+        set({
+          defaultStocks: updatedStocks,
+          defaultStockHistory: updatedHistory,
+        });
+      },
+
+      setAlertPrice: (symbol, alertPrice) => {
+        const { stocks } = get();
+        const updatedStocks = stocks.map((s) =>
+          s.symbol === symbol ? { ...s, alertPrice } : s
+        );
+        set({ stocks: updatedStocks });
+      },
+
+      setPercentageChange: (symbol, percentageChange) => {
+        const { stocks } = get();
+        const updatedStocks = stocks.map((s) =>
+          s.symbol === symbol ? { ...s, percentageChange } : s
+        );
+        set({ stocks: updatedStocks });
+      },
+      setStockSymbols: (symbols) => set({ symbols }),
+    }),
+    { name: "stock-store" }
+  )
+);
 
 export default useStockStore;
