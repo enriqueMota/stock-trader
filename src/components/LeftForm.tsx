@@ -43,6 +43,7 @@ const LeftForm: React.FC = () => {
   const handleSubmit = (values: FormValues) => {
     addStock(values.symbol, values.alertPrice);
     subscribeToSymbol(values.symbol);
+    form.reset();
   };
 
   return (
@@ -51,10 +52,13 @@ const LeftForm: React.FC = () => {
         <Select
           label="Select a stock"
           placeholder="Pick one"
-          data={symbols?.map((symbol) => ({
-            value: symbol.symbol,
-            label: `${symbol.description} (${symbol.symbol})`,
-          }))}
+          data={[
+            { label: "", value: "" },
+            ...(symbols?.map((symbol) => ({
+              value: symbol.symbol,
+              label: `${symbol.description} (${symbol.symbol})`,
+            })) ?? []),
+          ]}
           {...form.getInputProps("symbol")}
         />
         <NumberInput
